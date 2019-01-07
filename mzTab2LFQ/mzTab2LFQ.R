@@ -8,6 +8,7 @@
 ## install.packages("corrplot")     # for correlation of peptide intensities
 ## install.packages("xtable")       # for peptides/proteins of interest tables
 ## install.packages("ggfortify")    # for plotPCA(), But we can do PCA without additional packages, see plotPCAscatter() etc.
+## install.packages("tsne")         # for tSNE analyses
 ##
 ## source("https://bioconductor.org/biocLite.R")
 ## biocLite("impute")               # for imputation
@@ -17,6 +18,7 @@ library(corrplot)
 library(xtable)
 #library(ggfortify)    # for plotPCA()
 library(impute)
+library(tsne)
 
 # clear entire workspace
 rm(list = ls())
@@ -860,7 +862,18 @@ if (numberOfStudyVariables(peptide.data) >= 3) {
 
 
 
+# start of tSNE analysis
 
+quants <- getPeptideQuants(peptide.data)
 
-peptide.data.2 <- imputePeptideQuants(peptide.data)
+quants <- data.frame(t(quants))
+quants$labels <- rep(1:3, times = 18)
+
+trn <- data.matrix(quants)
+cols <- rainbow(3)
+
+ecb = function(x, y){ plot(x, t='n'); text(x, labels=trn[,6900], col=cols[trn[,6900] +1]);}
+tsne_res = tsne(trn[,1:6899], epoch_callback = ecb, perplexity=50, epoch=50)
+
+# end of tSNE analysis
 
