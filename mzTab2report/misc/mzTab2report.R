@@ -175,16 +175,13 @@ numberOfStudyVariables <- function(data)
 
 # determine fold changes and map to finite numbers
 # fc = log2(abundances1/abundances2)
-# Should be NaN-save, i.e. NaN in any of the two abundance vectors results in NaN in the fold change vector.
-# NaN = not quantifiable, hence fc = NaN = not quantifiable
-calculateFoldChange <- function(abundances1, abundances2)
-{
+# Should be NA-save, i.e. abundance vectors may contain NAs.
+calculateFoldChange <- function(abundances1, abundances2) {
   offset <- 1e-10       # avoids devisions by zero
   max.fc <- FcCutoff    # map knock-out fold changes to finite values 
   
-  # Alternatively, NaNs can be replaced by zeros.  
-  #abundances1[is.nan(abundances1)] <- 0
-  #abundances2[is.nan(abundances2)] <- 0
+  abundances1[is.na(abundances1)] <- 0
+  abundances2[is.na(abundances2)] <- 0
   
   # calculate fold changes
   abundances1 <- abundances1 + offset
@@ -1054,7 +1051,6 @@ plotPeptidesPerProtein <- function(data, pdf.file)
 
 
 
-
 ####
 ## (3) main part
 ####
@@ -1323,3 +1319,26 @@ if (!isEmpty(peptide.data$accession) && !isEmpty(peptide.data$unique) && !isEmpt
   }
 }
 
+
+
+
+
+
+
+
+# explore not-quantifiable features further
+
+peptide.data$intensity <- getAverageIntensity(peptide.data)
+
+idx.1 <- which(is.nan(peptide.data$"peptide_abundance_study_variable[1]"))
+idx.2 <- which(is.nan(peptide.data$"peptide_abundance_study_variable[2]"))
+
+idx <- unique(c(idx.1,idx.2))
+
+mz <- peptide.data$mass_to_charge
+rt <- peptide.data$retention_time
+
+pdf(file="plot_PositionNotQuantifiable.pdf", height = 7, width = 10)
+plot(mz, rt, xlab="m/z [Th]", ylab="RT [sec]", pch=".", col="grey")
+points(mz[idx], rt[idx], pch=".", col="red")
+dev.off()
