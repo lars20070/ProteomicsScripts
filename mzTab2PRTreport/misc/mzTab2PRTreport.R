@@ -17,7 +17,7 @@ rm(list = ls())
 ####
 
 #input.file <- 'analysis.mzTab'
-input.file <- 'example.mzTab'
+input.file <- 'example_1.mzTab'
 
 # options
 options(digits=10)
@@ -146,6 +146,48 @@ readMzTabPRT <-function(file) {
 ####
 
 # read mzTab data
-protein.data <- readMzTabPRT(input.file)
+#protein.data <- readMzTabPRT(input.file)
 
-n.total <- dim(protein.data)[1]
+#n.total <- dim(protein.data)[1]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+file <- input.file
+
+# find start of the PRT section
+first.row <- startSection(file, "PRH")
+
+# read entire mzTab
+data <- read.table(file, sep="\t", skip=first.row-1, fill=TRUE, header=TRUE, quote="", na.strings=c("null","NA"), stringsAsFactors=FALSE, check.names=FALSE)
+
+# extract PRT data
+protein.data <- data[which(data[,1]=="PRT"),]
+protein.data$PRH <- NULL
+
+# get all protein group types
+protein.group.types <- unique(protein.data$opt_global_protein_group_type)
+
+protein.groupings <- list()
+for (group in protein.group.types)
+{
+  protein.groupings <- append(protein.groupings, protein.data[which(protein.data$opt_global_protein_group_type==group),])
+}
+
